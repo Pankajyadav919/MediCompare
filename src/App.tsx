@@ -1,15 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import Navbar2 from './components/Navbar2';
 import HeroSection from './components/HeroSection';
 import Footer from './components/Footer';
 import PriceComparison from './components/PriceComparison';
 import FAQSection from './components/FAQSection';
 import ElegantCardCollection from './components/ElegantCardCollection';
 import AboutPage from './components/About';
-import { Navigate } from 'react-router-dom';
 import SignUpPage from './components/signup';
 import LoginPage from './components/login';
+import PremiumLandingPage from './components/Landing';
+
+// Protected Route component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+};
+
 const App: React.FC = () => {
   const [showComparison, setShowComparison] = useState(false);
   const [searchParams, setSearchParams] = useState({
@@ -20,6 +30,13 @@ const App: React.FC = () => {
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [fetchedData, setFetchedData] = useState<any>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Check if user is authenticated on mount
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+  }, []);
 
   const commonMedications = [
     'Ibuprofen 200mg',
@@ -53,8 +70,6 @@ const App: React.FC = () => {
     });
   };
 
- 
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setShowComparison(false);
@@ -81,62 +96,63 @@ const App: React.FC = () => {
   return (
     <Router>
       <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900">
-        <Navbar />
+        <Navbar2 isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} />
         <main className="flex-grow">
           <Routes>
             <Route
               path="/"
               element={
-          <>
-            <HeroSection
-              onSearch={handleSearch}
-              searchHistory={searchHistory}
-              commonMedications={commonMedications}
-            />
+                <ProtectedRoute>
+                  <>
+                    <HeroSection
+                      onSearch={handleSearch}
+                      searchHistory={searchHistory}
+                      commonMedications={commonMedications}
+                    />
 
-            {fetchedData && (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded m-4 text-sm">
-                <strong>Fetched Data:</strong>
-                <pre>{JSON.stringify(fetchedData, null, 2)}</pre>
-              </div>
-            )}
+                    {fetchedData && (
+                      <div className="p-4 bg-blue-50 border border-blue-200 rounded m-4 text-sm">
+                        <strong>Fetched Data:</strong>
+                        <pre>{JSON.stringify(fetchedData, null, 2)}</pre>
+                      </div>
+                    )}
 
-            {fetchError && (
-              <div className="p-4 bg-red-100 border border-red-400 rounded m-4 text-red-700">
-                Error fetching data: {fetchError}
-              </div>
-            )}
+                    {fetchError && (
+                      <div className="p-4 bg-red-100 border border-red-400 rounded m-4 text-red-700">
+                        Error fetching data: {fetchError}
+                      </div>
+                    )}
 
-            {showComparison && (
-              <div
-                className="modal-backdrop fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-                role="dialog"
-                aria-modal="true"
-              >
-                <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
-            <PriceComparison
-              medication={searchParams.medication}
-              dosage={searchParams.dosage}
-              quantity={searchParams.quantity}
-              onClose={() => setShowComparison(false)}
-            />
-                </div>
-              </div>
-            )}
+                    {showComparison && (
+                      <div
+                        className="modal-backdrop fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+                        role="dialog"
+                        aria-modal="true"
+                      >
+                        <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
+                          <PriceComparison
+                            medication={searchParams.medication}
+                            dosage={searchParams.dosage}
+                            quantity={searchParams.quantity}
+                            onClose={() => setShowComparison(false)}
+                          />
+                        </div>
+                      </div>
+                    )}
 
-            <ElegantCardCollection />
-            <FAQSection />
-          </>
+                    <ElegantCardCollection />
+                    <PremiumLandingPage/>
+                    <FAQSection />
+                  </>
+                </ProtectedRoute>
               }
             />
             <Route path="/about" element={<AboutPage />} />
-            {/* Redirect /home to / */}
+            <Route path="/login" element={<LoginPage setIsAuthenticated={setIsAuthenticated} />} />
+            <Route path="/signup" element={<SignUpPage setIsAuthenticated={setIsAuthenticated} />} />
             <Route path="/home" element={<Navigate to="/" replace />} />
-          
-          <Route path="/login" element= {<LoginPage/>}/>
-          <Route path="/signup" element= {<SignUpPage/>}/>
-
           </Routes>
+          
         </main>
         <Footer />
       </div>

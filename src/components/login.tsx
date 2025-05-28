@@ -1,11 +1,34 @@
 import { useState, useRef, useEffect } from 'react';
 import { FaQuoteLeft, FaQuoteRight } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
-const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+interface LoginPageProps {
+  setIsAuthenticated: (value: boolean) => void;
+}
+
+const LoginPage = ({ setIsAuthenticated }: LoginPageProps) => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [errors, setErrors] = useState({
+    email: '',
+    password: '',
+    submit: ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsAuthenticated(true);
+      navigate('/');
+    }
+  }, [navigate, setIsAuthenticated]);
 
   // Handle floating label focus
   const handleFocus = (field: 'email' | 'password') => {
@@ -14,7 +37,7 @@ const LoginPage = () => {
       : passwordRef.current?.parentElement?.querySelector('.floating-label');
     
     if (label) {
-      label.classList.add('text-gold-500', 'font-semibold');
+      label.classList.add('text-[#d4af37]', 'font-semibold');
     }
   };
 
@@ -24,19 +47,116 @@ const LoginPage = () => {
     const label = input?.parentElement?.querySelector('.floating-label');
     
     if (label && !input?.value) {
-      label.classList.remove('text-gold-500', 'font-semibold');
+      label.classList.remove('text-[#d4af37]', 'font-semibold');
     }
   };
 
   // Initialize floating labels
   useEffect(() => {
     if (emailRef.current?.value) {
-      emailRef.current.parentElement?.querySelector('.floating-label')?.classList.add('text-gold-500', 'font-semibold');
+      emailRef.current.parentElement?.querySelector('.floating-label')?.classList.add('text-[#d4af37]', 'font-semibold');
     }
     if (passwordRef.current?.value) {
-      passwordRef.current.parentElement?.querySelector('.floating-label')?.classList.add('text-gold-500', 'font-semibold');
+      passwordRef.current.parentElement?.querySelector('.floating-label')?.classList.add('text-[#d4af37]', 'font-semibold');
     }
   }, []);
+
+  // Validate form fields
+  const validateField = (name: string, value: string) => {
+    switch (name) {
+      case 'email':
+        if (!value.trim()) {
+          return 'Email is required';
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          return 'Please enter a valid email address';
+        }
+        return '';
+      case 'password':
+        if (!value) {
+          return 'Password is required';
+        }
+        return '';
+      default:
+        return '';
+    }
+  };
+
+  // Handle form input changes
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    setErrors(prev => ({
+      ...prev,
+      [name]: validateField(name, value)
+    }));
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setErrors(prev => ({ ...prev, submit: '' }));
+
+    // Validate all fields
+    const newErrors = {
+      email: validateField('email', formData.email),
+      password: validateField('password', formData.password),
+      submit: ''
+    };
+
+    setErrors(newErrors);
+
+    // Check if there are any validation errors
+    if (Object.values(newErrors).some(error => error !== '')) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/logindata', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Store the token in localStorage
+      localStorage.setItem('token', data.data.token);
+      
+      // Update authentication state
+      setIsAuthenticated(true);
+      
+      // Redirect to home page
+      navigate('/');
+      
+      // Reload the page after a short delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+    } catch (error) {
+      setErrors(prev => ({
+        ...prev,
+        submit: error instanceof Error ? error.message : 'An error occurred during login'
+      }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Handle ripple effect
   const createRipple = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -88,56 +208,75 @@ const LoginPage = () => {
         <div className="text-[1.5rem] font-semibold text-[#003366] mb-8 tracking-wider">
           Welcome Back
         </div>
-<form action="/logindata" method="POST">
-        {/* Email input */}
-        <div className="relative mb-6 text-left">
-          <input
-            ref={emailRef}
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onFocus={() => handleFocus('email')}
-            onBlur={() => handleBlur('email')}
-            className="w-full p-5 border border-gray-200 rounded-xl text-base transition-all duration-300 bg-white relative z-0 focus:border-[#d4af37] focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)] focus:-translate-y-[2px]"
-            placeholder=" "
-          />
-          <label className="floating-label absolute pointer-events-none left-[15px] top-[15px] transition-all duration-300 text-gray-500 text-base bg-transparent px-[5px] z-10">
-            Email address
-          </label>
-        </div>
 
-        {/* Password input */}
-        <div className="relative mb-6 text-left">
-          <input
-            ref={passwordRef}
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onFocus={() => handleFocus('password')}
-            onBlur={() => handleBlur('password')}
-            className="w-full p-5 border border-gray-200 rounded-xl text-base transition-all duration-300 bg-white relative z-0 focus:border-[#d4af37] focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)] focus:-translate-y-[2px]"
-            placeholder=" "
-          />
-          <label className="floating-label absolute pointer-events-none left-[15px] top-[15px] transition-all duration-300 text-gray-500 text-base bg-transparent px-[5px] z-10">
-            Password
-          </label>
-        </div>
+        {/* Error message */}
+        {errors.submit && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+            {errors.submit}
+          </div>
+        )}
 
-        {/* Forgot password */}
-        <a href="#" className="block text-right mb-6 text-sm text-[#d4af37] hover:text-[#003366] hover:underline transition-colors duration-300">
-          Forgot password?
-        </a>
+        <form onSubmit={handleSubmit}>
+          {/* Email input */}
+          <div className="relative mb-6 text-left">
+            <input
+              ref={emailRef}
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              onFocus={() => handleFocus('email')}
+              onBlur={() => handleBlur('email')}
+              className={`w-full p-5 border ${errors.email ? 'border-red-300' : 'border-gray-200'} rounded-xl text-base transition-all duration-300 bg-white relative z-0 focus:border-[#d4af37] focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)] focus:-translate-y-[2px]`}
+              placeholder=" "
+            />
+            <label className="floating-label absolute pointer-events-none left-[15px] top-[15px] transition-all duration-300 text-gray-500 text-base bg-transparent px-[5px] z-10">
+              Email address
+            </label>
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+            )}
+          </div>
 
-        {/* Login button */}
-        <button
-          onClick={handleButtonClick}
-          className="w-full p-4 my-2 rounded-xl text-base font-semibold tracking-wider relative overflow-hidden bg-gradient-to-r from-[#003366] to-[#6699cc] text-white shadow-lg hover:-translate-y-[3px] hover:shadow-xl active:translate-y-0 transition-all duration-400"
-        >
-          Login
-        </button>
-</form>
+          {/* Password input */}
+          <div className="relative mb-6 text-left">
+            <input
+              ref={passwordRef}
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              onFocus={() => handleFocus('password')}
+              onBlur={() => handleBlur('password')}
+              className={`w-full p-5 border ${errors.password ? 'border-red-300' : 'border-gray-200'} rounded-xl text-base transition-all duration-300 bg-white relative z-0 focus:border-[#d4af37] focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)] focus:-translate-y-[2px]`}
+              placeholder=" "
+            />
+            <label className="floating-label absolute pointer-events-none left-[15px] top-[15px] transition-all duration-300 text-gray-500 text-base bg-transparent px-[5px] z-10">
+              Password
+            </label>
+            {errors.password && (
+              <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+            )}
+          </div>
+
+          {/* Forgot password */}
+          <a href="#" className="block text-right mb-6 text-sm text-[#d4af37] hover:text-[#003366] hover:underline transition-colors duration-300">
+            Forgot password?
+          </a>
+
+          {/* Login button */}
+          <button
+            type="submit"
+            onClick={handleButtonClick}
+            disabled={isLoading}
+            className={`w-full p-4 my-2 rounded-xl text-base font-semibold tracking-wider relative overflow-hidden bg-gradient-to-r from-[#003366] to-[#6699cc] text-white shadow-lg hover:-translate-y-[3px] hover:shadow-xl active:translate-y-0 transition-all duration-400 ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
+          >
+            {isLoading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+
         {/* Divider */}
         <div className="relative my-6 text-gray-500 text-sm">
           <span className="relative px-2 bg-white">OR</span>
@@ -157,7 +296,7 @@ const LoginPage = () => {
         {/* Sign up prompt */}
         <p className="text-gray-500 text-sm my-6">
           Don't have an account?{' '}
-          <a href="Signup.html" className="text-[#d4af37] font-semibold hover:text-[#003366] transition-colors duration-300 relative after:content-[''] after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[2px] after:bg-[#003366] after:transition-all after:duration-300 hover:after:w-full">
+          <a href="/signup" className="text-[#d4af37] font-semibold hover:text-[#003366] transition-colors duration-300 relative after:content-[''] after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[2px] after:bg-[#003366] after:transition-all after:duration-300 hover:after:w-full">
             Sign up
           </a>
         </p>

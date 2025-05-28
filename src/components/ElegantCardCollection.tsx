@@ -1,5 +1,7 @@
 import React from 'react';
-
+import paracetamol from '../assets/paracetamol.jpg';
+import dabur from '../assets/Dabur.jpeg';
+import Volini from '../assets/Volini (2).jpeg'
 const ElegantCardCollection: React.FC = () => {
   return (
     <section className="max-w-[1200px] mx-auto my-[60px] px-5">
@@ -18,8 +20,8 @@ const ElegantCardCollection: React.FC = () => {
         <div className="w-full rounded-[16px] overflow-hidden bg-white shadow-lg transition-all duration-400 hover:-translate-y-1 hover:shadow-xl">
           <div className="h-[200px] relative overflow-hidden">
             <img
-              src="https://source.unsplash.com/random/600x400/?perfume,bottle"
-              alt="Luxury Perfume"
+              src={paracetamol}
+              alt="Paracetamol"
               className="w-full h-full object-cover transition-transform duration-1000 hover:scale-103"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent from-70% to-white/90"></div>
@@ -57,7 +59,7 @@ const ElegantCardCollection: React.FC = () => {
         <div className="w-full rounded-[16px] overflow-hidden bg-white shadow-lg transition-all duration-400 hover:-translate-y-1 hover:shadow-xl">
           <div className="h-[200px] relative overflow-hidden">
             <img
-              src="https://source.unsplash.com/random/600x400/?perfume,bottle"
+              src={Volini}
               alt="Luxury Perfume"
               className="w-full h-full object-cover transition-transform duration-1000 hover:scale-103"
             />
@@ -96,7 +98,7 @@ const ElegantCardCollection: React.FC = () => {
         <div className="w-full rounded-[16px] overflow-hidden bg-white shadow-lg transition-all duration-400 hover:-translate-y-1 hover:shadow-xl">
           <div className="h-[200px] relative overflow-hidden">
             <img
-              src="https://source.unsplash.com/random/600x400/?perfume,bottle"
+              src={dabur}
               alt="Luxury Perfume"
               className="w-full h-full object-cover transition-transform duration-1000 hover:scale-103"
             />

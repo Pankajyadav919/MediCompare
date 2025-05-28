@@ -1,8 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPills } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
 
-const Navbar = () => {
+interface NavbarProps {
+  isAuthenticated: boolean;
+  setIsAuthenticated: (value: boolean) => void;
+}
+
+const Navbar = ({ isAuthenticated, setIsAuthenticated }: NavbarProps) => {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -11,6 +18,12 @@ const Navbar = () => {
 
   const closeMenu = () => {
     setIsMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsAuthenticated(false);
+    navigate('/login');
   };
 
   const navLinks = [
@@ -42,13 +55,40 @@ const Navbar = () => {
           ))}
           
           <div className="auth-buttons flex gap-4 mt-4 md:mt-0 md:ml-6">
-            <a 
-              href="#" 
-              className="btn-account px-5 py-2.5 rounded-md bg-gold text-white border-2 border-gold font-montserrat font-semibold text-base hover:bg-amber-600 hover:border-amber-600 transition-colors duration-300"
-              onClick={closeMenu}
-            >
-              My Account
-            </a>
+            {isAuthenticated ? (
+              <>
+                <a 
+                  href="#" 
+                  className="btn-account px-5 py-2.5 rounded-md bg-gold text-white border-2 border-gold font-montserrat font-semibold text-base hover:bg-amber-600 hover:border-amber-600 transition-colors duration-300"
+                  onClick={closeMenu}
+                >
+                  My Account
+                </a>
+                <button 
+                  onClick={handleLogout}
+                  className="btn-logout px-5 py-2.5 rounded-md bg-white text-gold border-2 border-gold font-montserrat font-semibold text-base hover:bg-gray-50 transition-colors duration-300"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <a 
+                  href="/login" 
+                  className="btn-login px-5 py-2.5 rounded-md bg-white text-gold border-2 border-gold font-montserrat font-semibold text-base hover:bg-gray-50 transition-colors duration-300"
+                  onClick={closeMenu}
+                >
+                  Login
+                </a>
+                <a 
+                  href="/signup" 
+                  className="btn-signup px-5 py-2.5 rounded-md bg-gold text-white border-2 border-gold font-montserrat font-semibold text-base hover:bg-amber-600 hover:border-amber-600 transition-colors duration-300"
+                  onClick={closeMenu}
+                >
+                  Sign Up
+                </a>
+              </>
+            )}
           </div>
         </div>
         

@@ -1,15 +1,37 @@
 import { useState, useRef, useEffect } from 'react';
 import { FaQuoteLeft, FaQuoteRight } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
-const SignUpPage = () => {
+interface SignUpPageProps {
+  setIsAuthenticated: (value: boolean) => void;
+}
+
+const SignUpPage = ({ setIsAuthenticated }: SignUpPageProps) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullname: '',
     email: '',
     password: ''
   });
+  const [errors, setErrors] = useState({
+    fullname: '',
+    email: '',
+    password: '',
+    submit: ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
   const fullnameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsAuthenticated(true);
+      navigate('/');
+    }
+  }, [navigate, setIsAuthenticated]);
 
   // Handle floating label focus
   const handleFocus = (field: 'fullname' | 'email' | 'password') => {
@@ -51,6 +73,39 @@ const SignUpPage = () => {
     }
   }, []);
 
+  // Validate form fields
+  const validateField = (name: string, value: string) => {
+    switch (name) {
+      case 'fullname':
+        if (!value.trim()) {
+          return 'Full name is required';
+        }
+        if (value.trim().length < 2) {
+          return 'Full name must be at least 2 characters';
+        }
+        return '';
+      case 'email':
+        if (!value.trim()) {
+          return 'Email is required';
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          return 'Please enter a valid email address';
+        }
+        return '';
+      case 'password':
+        if (!value) {
+          return 'Password is required';
+        }
+        if (value.length < 6) {
+          return 'Password must be at least 6 characters';
+        }
+        return '';
+      default:
+        return '';
+    }
+  };
+
   // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -58,11 +113,81 @@ const SignUpPage = () => {
       ...prev,
       [name]: value
     }));
+    setErrors(prev => ({
+      ...prev,
+      [name]: validateField(name, value)
+    }));
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setErrors(prev => ({ ...prev, submit: '' }));
+
+    // Validate all fields
+    const newErrors = {
+      fullname: validateField('fullname', formData.fullname),
+      email: validateField('email', formData.email),
+      password: validateField('password', formData.password),
+      submit: ''
+    };
+
+    setErrors(newErrors);
+
+    // Check if there are any validation errors
+    if (Object.values(newErrors).some(error => error !== '')) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/signupdata', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.fullname,
+          email: formData.email,
+          password: formData.password
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Signup failed');
+      }
+
+      // Store the token in localStorage
+      localStorage.setItem('token', data.data.token);
+      
+      // Update authentication state
+      setIsAuthenticated(true);
+      
+      // Redirect to home page
+      navigate('/');
+      
+      // Reload the page after a short delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+    } catch (error) {
+      setErrors(prev => ({
+        ...prev,
+        submit: error instanceof Error ? error.message : 'An error occurred during signup'
+      }));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handle ripple effect
   const createRipple = (e: React.MouseEvent<HTMLButtonElement>) => {
     const button = e.currentTarget;
+    if (!button) return;
+
     const circle = document.createElement('span');
     const diameter = Math.max(button.clientWidth, button.clientHeight);
     const radius = diameter / 2;
@@ -81,6 +206,7 @@ const SignUpPage = () => {
   };
 
   const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (isLoading) return; // Don't create ripple effect if button is disabled
     createRipple(e);
     setTimeout(() => {
       const ripple = e.currentTarget.getElementsByClassName('ripple')[0];
@@ -110,72 +236,102 @@ const SignUpPage = () => {
         <div className="text-[1.5rem] font-semibold text-[#003366] mb-8 tracking-wider">
           Create Your Premium Account
         </div>
-<form action="/signupdata" method="POST">
-        {/* Full Name input */}
-        <div className="relative mb-6 text-left">
-          <input
-            ref={fullnameRef}
-            type="text"
-            id="fullname"
-            name="fullname"
-            value={formData.fullname}
-            onChange={handleChange}
-            onFocus={() => handleFocus('fullname')}
-            onBlur={() => handleBlur('fullname')}
-            className="w-full p-5 border border-gray-200 rounded-xl text-base transition-all duration-300 bg-white relative z-0 focus:border-[#d4af37] focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)] focus:-translate-y-[2px]"
-            placeholder=" "
-          />
-          <label className="floating-label absolute pointer-events-none left-[15px] top-[15px] transition-all duration-300 text-gray-500 text-base bg-transparent px-[5px] z-10">
-            Full Name
-          </label>
-        </div>
 
-        {/* Email input */}
-        <div className="relative mb-6 text-left">
-          <input
-            ref={emailRef}
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            onFocus={() => handleFocus('email')}
-            onBlur={() => handleBlur('email')}
-            className="w-full p-5 border border-gray-200 rounded-xl text-base transition-all duration-300 bg-white relative z-0 focus:border-[#d4af37] focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)] focus:-translate-y-[2px]"
-            placeholder=" "
-          />
-          <label className="floating-label absolute pointer-events-none left-[15px] top-[15px] transition-all duration-300 text-gray-500 text-base bg-transparent px-[5px] z-10">
-            Email address
-          </label>
-        </div>
+        {/* Error message */}
+        {errors.submit && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+            {errors.submit}
+          </div>
+        )}
 
-        {/* Password input */}
-        <div className="relative mb-6 text-left">
-          <input
-            ref={passwordRef}
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            onFocus={() => handleFocus('password')}
-            onBlur={() => handleBlur('password')}
-            className="w-full p-5 border border-gray-200 rounded-xl text-base transition-all duration-300 bg-white relative z-0 focus:border-[#d4af37] focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)] focus:-translate-y-[2px]"
-            placeholder=" "
-          />
-          <label className="floating-label absolute pointer-events-none left-[15px] top-[15px] transition-all duration-300 text-gray-500 text-base bg-transparent px-[5px] z-10">
-            Create Password
-          </label>
-        </div>
+        <form onSubmit={handleSubmit}>
+          {/* Full Name input */}
+          <div className="relative mb-6 text-left">
+            <input
+              ref={fullnameRef}
+              type="text"
+              id="fullname"
+              name="fullname"
+              value={formData.fullname}
+              onChange={handleChange}
+              onFocus={() => handleFocus('fullname')}
+              onBlur={() => handleBlur('fullname')}
+              className={`w-full p-5 border ${errors.fullname ? 'border-red-300' : 'border-gray-200'} rounded-xl text-base transition-all duration-300 bg-white relative z-0 focus:border-[#d4af37] focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)] focus:-translate-y-[2px]`}
+              placeholder=" "
+            />
+            <label className="floating-label absolute pointer-events-none left-[15px] top-[15px] transition-all duration-300 text-gray-500 text-base bg-transparent px-[5px] z-10">
+              Full Name
+            </label>
+            {errors.fullname && (
+              <p className="mt-1 text-sm text-red-500">{errors.fullname}</p>
+            )}
+          </div>
 
-        {/* Create Account button */}
-        <button
-          onClick={handleButtonClick}
-          className="w-full p-4 my-2 rounded-xl text-base font-semibold tracking-wider relative overflow-hidden bg-gradient-to-r from-[#003366] to-[#6699cc] text-white shadow-lg hover:-translate-y-[3px] hover:shadow-xl active:translate-y-0 transition-all duration-400"
-        >
-          Create Account
-        </button>
-</form>
+          {/* Email input */}
+          <div className="relative mb-6 text-left">
+            <input
+              ref={emailRef}
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              onFocus={() => handleFocus('email')}
+              onBlur={() => handleBlur('email')}
+              className={`w-full p-5 border ${errors.email ? 'border-red-300' : 'border-gray-200'} rounded-xl text-base transition-all duration-300 bg-white relative z-0 focus:border-[#d4af37] focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)] focus:-translate-y-[2px]`}
+              placeholder=" "
+            />
+            <label className="floating-label absolute pointer-events-none left-[15px] top-[15px] transition-all duration-300 text-gray-500 text-base bg-transparent px-[5px] z-10">
+              Email address
+            </label>
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+            )}
+          </div>
+
+          {/* Password input */}
+          <div className="relative mb-6 text-left">
+            <input
+              ref={passwordRef}
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              onFocus={() => handleFocus('password')}
+              onBlur={() => handleBlur('password')}
+              className={`w-full p-5 border ${errors.password ? 'border-red-300' : 'border-gray-200'} rounded-xl text-base transition-all duration-300 bg-white relative z-0 focus:border-[#d4af37] focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)] focus:-translate-y-[2px]`}
+              placeholder=" "
+            />
+            <label className="floating-label absolute pointer-events-none left-[15px] top-[15px] transition-all duration-300 text-gray-500 text-base bg-transparent px-[5px] z-10">
+              Create Password
+            </label>
+            {errors.password && (
+              <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+            )}
+          </div>
+
+          {/* Create Account button */}
+          <button
+            type="submit"
+            onClick={handleButtonClick}
+            disabled={isLoading}
+            className={`w-full p-4 my-2 rounded-xl text-base font-semibold tracking-wider relative overflow-hidden bg-gradient-to-r from-[#003366] to-[#6699cc] text-white shadow-lg hover:-translate-y-[3px] hover:shadow-xl active:translate-y-0 transition-all duration-400 ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
+          >
+            {isLoading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Creating Account...
+              </span>
+            ) : (
+              'Create Account'
+            )}
+          </button>
+        </form>
+
         {/* Divider */}
         <div className="relative my-6 text-gray-500 text-sm">
           <span className="relative px-2 bg-white">OR</span>
@@ -207,7 +363,7 @@ const SignUpPage = () => {
         {/* Login prompt */}
         <p className="text-gray-500 text-sm">
           Already have an account?{' '}
-          <a href="login.html" className="text-[#d4af37] font-semibold hover:text-[#003366] transition-colors duration-300 relative after:content-[''] after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[2px] after:bg-[#003366] after:transition-all after:duration-300 hover:after:w-full">
+          <a href="/login" className="text-[#d4af37] font-semibold hover:text-[#003366] transition-colors duration-300 relative after:content-[''] after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[2px] after:bg-[#003366] after:transition-all after:duration-300 hover:after:w-full">
             Login
           </a>
         </p>

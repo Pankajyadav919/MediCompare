@@ -1,0 +1,44 @@
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) rotate(30deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateX(100%) rotate(30deg);
+    opacity: 0;
+  }
+}
+
+/* Floating animation */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Shine animation for icon hover */
+.animate-shine {
+  animation: shine 2s infinite;
+}
+
+/* Reveal animations for intersection observer */
+.feature-item.visible {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.search-tags.visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
