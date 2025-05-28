@@ -14,11 +14,11 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: 'Home', href: '/Home' },
+    { name: 'Home', href: '/home' },
     { name: 'Medicines', href: '#' },
     { name: 'Compare', href: '#' },
     { name: 'Pharmacies', href: '#' },
-    { name: 'About', href: '/About' },
+    { name: 'About', href: '/about' },
   ];
 
   return (
@@ -43,18 +43,11 @@ const Navbar = () => {
           
           <div className="auth-buttons flex gap-4 mt-4 md:mt-0 md:ml-6">
             <a 
-              href="/login" 
-              className="btn-login px-5 py-2.5 rounded-md border-2 border-primary text-primary font-montserrat font-semibold text-base hover:bg-primary hover:text-white transition-colors duration-300"
+              href="#" 
+              className="btn-account px-5 py-2.5 rounded-md bg-gold text-white border-2 border-gold font-montserrat font-semibold text-base hover:bg-amber-600 hover:border-amber-600 transition-colors duration-300"
               onClick={closeMenu}
             >
-              Login
-            </a>
-            <a 
-              href="/signup" 
-              className="btn-signup px-5 py-2.5 rounded-md bg-gold text-white border-2 border-gold font-montserrat font-semibold text-base hover:bg-amber-600 hover:border-amber-600 transition-colors duration-300"
-              onClick={closeMenu}
-            >
-              Sign Up
+              My Account
             </a>
           </div>
         </div>
@@ -63,9 +56,9 @@ const Navbar = () => {
           className="menu-toggle md:hidden flex flex-col justify-between w-7 h-5 cursor-pointer" 
           onClick={toggleMenu}
         >
-          <span className={`block w-full h-0.5 bg-primary transition-all duration-300 ${isMenuOpen ? 'transform rotate-45deg translate-y-2' : ''}`}></span>
+          <span className={`block w-full h-0.5 bg-primary transition-all duration-300 ${isMenuOpen ? 'transform rotate-45 translate-y-2' : ''}`}></span>
           <span className={`block w-full h-0.5 bg-primary transition-all duration-300 ${isMenuOpen ? 'opacity-0' : 'opacity-100'}`}></span>
-          <span className={`block w-full h-0.5 bg-primary transition-all duration-300 ${isMenuOpen ? 'transform -rotate-45deg -translate-y-2' : ''}`}></span>
+          <span className={`block w-full h-0.5 bg-primary transition-all duration-300 ${isMenuOpen ? 'transform -rotate-45 -translate-y-2' : ''}`}></span>
         </div>
       </nav>
     </div>

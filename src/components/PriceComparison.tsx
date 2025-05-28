@@ -157,7 +157,7 @@ const PriceComparison: React.FC<PriceComparisonProps> = ({ medication, dosage, q
   }
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
+    <div className="w-full p-6 bg-white rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-6">
         <Typography variant="h5" className="text-primary font-bold">
           Prices for {medication} {dosage} (Qty: {quantity})
@@ -172,21 +172,21 @@ const PriceComparison: React.FC<PriceComparisonProps> = ({ medication, dosage, q
         </button>
       </div>
 
-      <TableContainer component={Paper} className="shadow-gold">
-        <Table>
+      <TableContainer component={Paper} className="shadow-gold w-full">
+        <Table sx={{ minWidth: 650 }} aria-label="price comparison table">
           <TableHead className="bg-primary">
             <TableRow>
-              <TableCell className="text-white font-bold">Pharmacy</TableCell>
-              <TableCell align="right" className="text-white font-bold">Price (₹)</TableCell>
-              <TableCell align="right" className="text-white font-bold">Savings</TableCell>
-              <TableCell align="right" className="text-white font-bold">Distance</TableCell>
-              <TableCell align="center" className="text-white font-bold">Options</TableCell>
+              <TableCell className="text-white font-bold min-w-[200px]">Pharmacy</TableCell>
+              <TableCell align="right" className="text-white font-bold min-w-[120px]">Price (₹)</TableCell>
+              <TableCell align="right" className="text-white font-bold min-w-[120px]">Savings</TableCell>
+              <TableCell align="right" className="text-white font-bold min-w-[120px]">Distance</TableCell>
+              <TableCell align="center" className="text-white font-bold min-w-[150px]">Options</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {results.map((pharmacy) => (
               <TableRow key={pharmacy.id} className="hover:bg-accent/10">
-                <TableCell component="th" scope="row">
+                <TableCell component="th" scope="row" className="min-w-[200px]">
                   <div className="flex items-center">
                     {pharmacy.isOnline ? 
                       <LocalShipping className="text-secondary mr-2" /> : 
@@ -196,26 +196,27 @@ const PriceComparison: React.FC<PriceComparisonProps> = ({ medication, dosage, q
                     {pharmacy.hasDiscount && <MonetizationOn className="text-gold ml-2" />}
                   </div>
                 </TableCell>
-                <TableCell align="right">
+                <TableCell align="right" className="min-w-[120px]">
                   <Typography variant="body1" className="font-bold">
                     ₹{pharmacy.price.toFixed(2)}
                   </Typography>
                 </TableCell>
-                <TableCell align="right">
+                <TableCell align="right" className="min-w-[120px]">
                   {pharmacy.estimatedSavings && pharmacy.estimatedSavings > 0 && (
                     <Typography variant="body2" className="text-green-600">
                       Save ₹{pharmacy.estimatedSavings.toFixed(2)}
                     </Typography>
                   )}
                 </TableCell>
-                <TableCell align="right">
+                <TableCell align="right" className="min-w-[120px]">
                   {pharmacy.distance ? `${pharmacy.distance.toFixed(1)} mi` : 'Online'}
                 </TableCell>
-                <TableCell align="center">
+                <TableCell align="center" className="min-w-[150px]">
                   <Button 
                     variant="outlined" 
                     size="small"
                     className="border-gold text-gold hover:bg-gold/10"
+                    fullWidth
                   >
                     View Details
                   </Button>

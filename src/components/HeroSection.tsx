@@ -1,6 +1,5 @@
 import React from 'react';
 import SearchBar from './Searchbar';
-
 interface HeroSectionProps {
   onSearch: (query: string) => void;
   searchHistory?: string[];

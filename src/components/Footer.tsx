@@ -14,6 +14,9 @@ import {
   faLinkedinIn 
 } from '@fortawesome/free-brands-svg-icons';
 
+
+
+
 const Footer = () => {
   const quickLinks = [
     'Medicine Database',
