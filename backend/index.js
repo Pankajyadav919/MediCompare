@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('./models/data'); // Import your user schema
 const cors = require('cors');
+const Medicine = require('./models/Medicine');
 
 
 const app = express();
@@ -354,48 +355,9 @@ app.post('/api/medicines', async (req, res) => {
 });
 
 // Search medicines
-app.get('/api/medicines/search', async (req, res) => {
-  try {
-    const { query, dosage } = req.query;
-    
-    let searchQuery = {};
-    if (query) {
-      searchQuery.name = { $regex: new RegExp(query, 'i') };
-    }
-    if (dosage) {
-      searchQuery.strength = { $regex: new RegExp(dosage, 'i') };
-    }
 
-    const medicines = await Medicine.find(searchQuery).limit(10);
-    res.json({
-      success: true,
-      data: medicines
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error searching medicines',
-      error: error.message
-    });
-  }
-});
 
 // Get all medicines
-app.get('/api/medicines', async (req, res) => {
-  try {
-    const medicines = await Medicine.find();
-    res.json({
-      success: true,
-      data: medicines
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching medicines',
-      error: error.message
-    });
-  }
-});
 
 // ============================================
 // DATABASE CONNECTION
@@ -406,6 +368,17 @@ mongoose.connect('mongodb://localhost:27017/mydatabase')
 }).catch(err => {
   console.error('Error connecting to MongoDB:', err);
 });
+
+
+const medcationData = [
+  { name: "Atorvastatin", form: "tab-cap", strength: "20 mg", price: 0.0439 },
+  { name: "Atorvastatin", form: "tab-cap", strength: "10 mg", price: 0.0533 },
+  { name: "Ibuprofen", form: "tab-cap", strength: "200 mg", price: 0.0193 },
+  { name: "Ibuprofen", form: "tab-cap", strength: "400 mg", price: 0.0148 },
+  { name: "Omeprazole", form: "tab-cap", strength: "20 mg", price: 0.0191 },
+  { name: "Metformin", form: "tab-cap", strength: "500 mg", price: 0.0262 },
+  { name: "Paracetamol", form: "tab-cap", strength: "500 mg", price: 0.0085 }
+];
 
 // ============================================
 // START SERVER
