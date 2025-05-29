@@ -324,6 +324,80 @@ app.post('/logout', authenticateToken, (req, res) => {
 });
 
 // ============================================
+// MEDICINE ROUTES
+// ============================================
+
+// Add new medicine
+app.post('/api/medicines', async (req, res) => {
+  try {
+    const { name, form, strength, price } = req.body;
+    
+    const newMedicine = new Medicine({
+      name,
+      form,
+      strength,
+      price
+    });
+
+    const savedMedicine = await newMedicine.save();
+    res.status(201).json({
+      success: true,
+      data: savedMedicine
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error adding medicine',
+      error: error.message
+    });
+  }
+});
+
+// Search medicines
+app.get('/api/medicines/search', async (req, res) => {
+  try {
+    const { query, dosage } = req.query;
+    
+    let searchQuery = {};
+    if (query) {
+      searchQuery.name = { $regex: new RegExp(query, 'i') };
+    }
+    if (dosage) {
+      searchQuery.strength = { $regex: new RegExp(dosage, 'i') };
+    }
+
+    const medicines = await Medicine.find(searchQuery).limit(10);
+    res.json({
+      success: true,
+      data: medicines
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error searching medicines',
+      error: error.message
+    });
+  }
+});
+
+// Get all medicines
+app.get('/api/medicines', async (req, res) => {
+  try {
+    const medicines = await Medicine.find();
+    res.json({
+      success: true,
+      data: medicines
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching medicines',
+      error: error.message
+    });
+  }
+});
+
+// ============================================
 // DATABASE CONNECTION
 // ============================================
 mongoose.connect('mongodb://localhost:27017/mydatabase')
@@ -344,6 +418,9 @@ app.listen(PORT, () => {
   console.log('GET /profile - Get user profile (protected)');
   console.log('PUT /profile - Update user profile (protected)');
   console.log('POST /logout - User logout (protected)');
+  console.log('POST /api/medicines - Add new medicine');
+  console.log('GET /api/medicines/search - Search medicines');
+  console.log('GET /api/medicines - Get all medicines');
 });
 
 module.exports = app;
