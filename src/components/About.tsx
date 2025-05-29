@@ -1,5 +1,6 @@
 import React from 'react';
-
+import aboutimage from '../assets/aboutimage.jpeg';
+import iiitimg from '../assets/collegelogo.jpeg'
 const OurStoryPage: React.FC = () => {
   return (
     <div className="bg-[#f5f3ee] text-[#333333] text-lg leading-relaxed overflow-x-hidden">
@@ -18,7 +19,7 @@ const OurStoryPage: React.FC = () => {
         {/* About Section */}
         <section className="grid md:grid-cols-2 gap-12 items-center mb-20">
           <div className="rounded-xl overflow-hidden shadow-2xl h-[500px]">
-            <img src="/Images/Aboutimage.jpg" alt="MediCompare Team" className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+            <img src={aboutimage} alt="MediCompare Team" className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
           </div>
           <div>
             <h2 className="text-3xl text-[#003366] font-semibold mb-6 relative inline-block after:content-[''] after:absolute after:bottom-[-10px] after:left-0 after:w-16 after:h-1 after:bg-[#d4af37]">
@@ -62,7 +63,7 @@ const OurStoryPage: React.FC = () => {
             MediCompare is a proud innovation originating from the Computer Science and Engineering department of IIIT Sonipat. Our founders developed the initial concept as part of their entrepreneurial journey at this premier technology institute.
           </p>
           <div className="w-40 mx-auto">
-            <img src="/Images/iiitsonipat.jpeg" alt="IIIT Sonipat Logo" className="w-full h-auto" />
+            <img src={iiitimg} alt="IIIT Sonipat Logo" className="w-full h-auto" />
           </div>
         </section>
       </div>
